@@ -21,7 +21,7 @@ app.get('/todos', function (req, res) {
   var filteredTodos = todos;
 
   if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-    filteredTodos = _.where(filteredTodos, {completed: true});
+    filteredTodos = _.where(filteredTodos, {completed: true});  // _.where grabs all items matching the above condition
   } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
     filteredTodos = _.where(filteredTodos, {completed: false});
   }
@@ -32,7 +32,7 @@ app.get('/todos', function (req, res) {
 app.get('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10); //  params are a string unless we set to number using parseInt
 
-  var matched = _.findWhere(todos, {id: todoId});
+  var matched = _.findWhere(todos, {id: todoId}); // _.findWhere grabs the first item that matches the id
   console.log(matched);
 
   if(matched){
