@@ -8,14 +8,16 @@ var PORT = process.env.PORT || 3000;
 var todos = [];
 var todoNextId = 1;
 
-// set up middleware
+// ========== set up middleware
+
 app.use(bodyParser.json());
 
 app.get('/', function (req, res) {
   res.send('Todo API Root');
 });
 
-// GET /todos?completed=true
+// ========== GET /todos?completed=true&q=house
+
 app.get('/todos', function (req, res) {
   var queryParams = req.query;
   var filteredTodos = todos;
@@ -25,10 +27,19 @@ app.get('/todos', function (req, res) {
   } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
     filteredTodos = _.where(filteredTodos, {completed: false});
   }
+
+  // q prop needs to exist and have length > 0
+  if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+    filteredTodos = _.filter(filteredTodos, function (todo) {
+      return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
+    });
+  }
+
   res.json(filteredTodos);
 });
 
-// GET /todos/:id (:id represents variable that gets passed in)
+// ========== GET /todos/:id (:id represents variable that gets passed in)
+
 app.get('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10); //  params are a string unless we set to number using parseInt
 
@@ -42,7 +53,8 @@ app.get('/todos/:id', function (req, res) {
   }
 });
 
-// POST /todos
+// ========== POST /todos
+
 app.post('/todos', function (req, res) {
   var body = _.pick(req.body, 'description', 'completed');
 
@@ -61,7 +73,8 @@ app.post('/todos', function (req, res) {
   res.json(body);
 });
 
-// DELETE /todos/:id
+// ========== DELETE /todos/:id
+
 app.delete('/todos/:id', function (req, res){
   var todoId = parseInt(req.params.id, 10);
   var matched = _.findWhere(todos, {id: todoId});
@@ -74,7 +87,8 @@ app.delete('/todos/:id', function (req, res){
   }
 });
 
-// PUT /todos/:id
+// ========== PUT /todos/:id
+
 app.put('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10);
   var matched = _.findWhere(todos, {id: todoId});
@@ -100,7 +114,6 @@ app.put('/todos/:id', function (req, res) {
   //_.extend(destination, sources)
   _.extend(matched, validAttributes);
   res.json(matched);
-
 
 });
 
