@@ -20,29 +20,33 @@ app.get('/', function (req, res) {
 // ========== GET /todos?completed=true&q=house
 
 app.get('/todos', function (req, res) {
-  var queryParams = req.query;
-  var filteredTodos = todos;
+  var query = req.query;
+  var where = {};
 
-  if(queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-    filteredTodos = _.where(filteredTodos, {completed: true});  // _.where grabs all items matching the above condition
-  } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-    filteredTodos = _.where(filteredTodos, {completed: false});
+  if(query.hasOwnProperty('completed') && query.completed === 'true') {
+    where.completed = true;
+  } else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+    where.completed = false;
   }
 
-  // q prop needs to exist and have length > 0
-  if(queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-    filteredTodos = _.filter(filteredTodos, function (todo) {
-      return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-    });
+  if(query.hasOwnProperty('q') && query.q.length > 0) {
+    where.description = {
+      $like: '%' + query.q + '%'
+    };
   }
 
-  res.json(filteredTodos);
+  db.todo.findAll({where: where}).then(function(todos) {
+    res.json(todos);
+  }, function(e) {
+    res.status(500).send();
+  });
 });
 
 // ========== GET /todos/:id (:id represents variable that gets passed in)
 
 app.get('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10); //  params are a string unless we set to number using parseInt
+
   db.todo.findById(todoId).then(function(todo) {
     if (!!todo) {
       res.json(todo.toJSON());
