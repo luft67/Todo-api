@@ -43,15 +43,15 @@ app.get('/todos', function (req, res) {
 
 app.get('/todos/:id', function (req, res) {
   var todoId = parseInt(req.params.id, 10); //  params are a string unless we set to number using parseInt
-
-  var matched = _.findWhere(todos, {id: todoId}); // _.findWhere grabs the first item that matches the id
-  console.log(matched);
-
-  if(matched){
-    res.json(matched);
-  } else {
-    res.status(404).send();
-  }
+  db.todo.findById(todoId).then(function(todo) {
+    if (!!todo) {
+      res.json(todo.toJSON());
+    } else {
+      res.status(404).send();
+    }
+  }, function(e) {
+      res.status(500).send();
+  });
 });
 
 // ========== POST /todos
@@ -59,32 +59,11 @@ app.get('/todos/:id', function (req, res) {
 app.post('/todos', function (req, res) {
   var body = _.pick(req.body, 'description', 'completed');
 
-  // call create on db.todo
-  //  if successful
-  // respond to api caller with 200 and todo (toJSON)
-  // if fail
-  // e res.status(400).json(e)
-
   db.todo.create(body).then(function(todo){
     res.json(todo.toJSON());
   }, function(e){
     res.status(400).json(e);
   });
-
-  
-  // if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-  //   return res.status(400).send();
-  // }
-  //
-  // // update body.description to be the new trimmed value
-  // body.description = body.description.trim();
-  //
-  // // add id field
-  // body.id = todoNextId++;
-  // // push body into array
-  // todos.push(body);
-  //
-  // res.json(body);
 });
 
 // ========== DELETE /todos/:id
